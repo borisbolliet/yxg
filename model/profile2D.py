@@ -5,6 +5,7 @@ from scipy.special import erf
 from scipy.integrate import quad
 from scipy.integrate import simps
 from scipy.interpolate import interp1d
+import math
 import pyccl as ccl
 try:  # deal with relative import from other scripts
     from .utils import R_Delta, concentration_duffy
@@ -170,10 +171,18 @@ class NFW(object):
         bg = kwargs["bg"] if "bg" in kwargs else 1
         bmax = kwargs["bmax"] if "bmax" in kwargs else 1
 
+        print("bg=",bg)
+        print("bmax=",bmax)
+        bg = 1. #BB
+        bmax = 1.
+
         c = concentration_duffy(M, a, is_D500=True, squeeze=False)
         R = R_Delta(cosmo, M, a, self.Delta,
                     is_matter=False, squeeze=False)/(c*a)
+        #R = R/R # BB replace with 1
         x = k*R[..., None]
+        #x = x/x
+
 
         c = c[..., None]*bmax  # optimise
         Si1, Ci1 = sici((bg+c)*x)
@@ -184,6 +193,16 @@ class NFW(object):
         P3 = np.sin(c*x)/((bg+c)*x)
 
         F = P1*(P2-P3)
+        # F = P1*( np.cos(bg*x)*(Ci1-Ci2))
+        #F = P1*np.cos(bg*x)
+        print('check nfw trunc')
+        print(x)
+        #print(np.cos(bg*x))
+        print("F")
+        print(F)
+        #print(c,Ci2,Si2)
+        #exit(0)
+        #F = F/F # BB: replace with 1
         return (F.squeeze(), (F**2).squeeze()) if squeeze else (F, F**2)
 
 
@@ -205,7 +224,10 @@ class HOD(object):
         Hz = ccl.h_over_h0(cosmo, a)*cosmo["h"]
 
         z = 1/a - 1
-        w = kwargs["width"]
+        w = 1.#kwargs["width"]
+        # print("width=",w)
+        # print("z_av=",self.z_avg)
+        # exit()
         nz_new = self.nzf(self.z_avg+(1/w)*(self.z-self.z_avg))
         nz_new /= simps(nz_new, x=self.z)
         nzf_new = interp1d(self.z, nz_new, kind="cubic",
@@ -215,19 +237,41 @@ class HOD(object):
 
     def n_cent(self, M, **kwargs):
         """Number of central galaxies in a halo."""
-        Mmin = 10**kwargs["Mmin"]
-        sigma_lnM = kwargs["sigma_lnM"]
 
-        Nc = 0.5 * (1 + erf((np.log10(M/Mmin))/sigma_lnM))
+        if  "type" in kwargs:
+            if kwargs["type"] == "unwise_hod":
+                #Mmin = 10**kwargs["Mmin"]
+                Mmin = 10**kwargs["Mmin"]
+                sigma_lnM = kwargs["sigma_lnM"]
+
+                Nc = 0.5 * (1 + erf((np.log10(M/Mmin))/np.sqrt(2)/sigma_lnM));
+            else:
+                Nc =0.
+        else:
+            Mmin = 10**kwargs["Mmin"]
+            sigma_lnM = kwargs["sigma_lnM"]
+            Nc = 0.5 * (1 + erf((np.log10(M/Mmin))/sigma_lnM));
         return Nc
 
     def n_sat(self, M, **kwargs):
         """Number of satellite galaxies in a halo."""
+        # print("M0,M1,alpha=",kwargs["M0"],kwargs["M1"],kwargs["alpha"])
         M0 = 10**kwargs["M0"]
         M1 = 10**kwargs["M1"]
         alpha = kwargs["alpha"]
+        # exit()
+        if  "type" in kwargs:
+            if kwargs["type"] == "unwise_hod":
+                M1_prime_HOD_factor = kwargs["M1_prime_HOD_factor"]
+                M_min_HOD_satellite_mass_factor_unwise =  kwargs["M_min_HOD_satellite_mass_factor_unwise"]
+                #Ns = ((M-M_min_HOD_satellite_mass_factor_unwise*M0)*np.heaviside(M-M_min_HOD_satellite_mass_factor_unwise*M0, 0) /M1_prime_HOD_factor/ M1)**alpha
+                Ns = ((M-M_min_HOD_satellite_mass_factor_unwise*M0)*np.heaviside(M-M_min_HOD_satellite_mass_factor_unwise*M0, 0) / M1/M1_prime_HOD_factor)**alpha
+                #Ns = ((M-M0)*np.heaviside(M-M0, 0) / M1)**alpha
+            else:
+                Ns = 0.
+        else:
+            Ns = ((M-M0)*np.heaviside(M-M0, 0) / M1)**alpha
 
-        Ns = ((M-M0)*np.heaviside(M-M0, 0) / M1)**alpha
         return Ns
 
     def profnorm(self, cosmo, a, squeeze=True, **kwargs):
@@ -238,6 +282,7 @@ class HOD(object):
 
         # extract parameters
         fc = kwargs["fc"]
+        print('fc=',fc)
 
         logMmin, logMmax = (6, 17)  # log of min and max halo mass [Msun]
         mpoints = int(64)           # number of integration points
@@ -247,16 +292,26 @@ class HOD(object):
         Dm = self.Delta/ccl.omega_x(cosmo, a, "matter")
         mfunc = [ccl.massfunc(cosmo, M, A1, A2) for A1, A2 in zip(a, Dm)]
 
-        Nc = self.n_cent(M, **kwargs)   # centrals
+        # if "type" in kwargs:
+        #     print(kwargs["type"])
+        #     kwargs["Mmin"] = np.log10(vec_unwise_mthresh(1./a-1.))
+        #     #exit()
+
+        Nc = self.n_cent(M,  **kwargs)   # centrals
         Ns = self.n_sat(M, **kwargs)    # satellites
 
         if self.ns_independent:
             dng = mfunc*(Nc*fc+Ns)  # integrand
+            print('ns_independent: yes')
         else:
             dng = mfunc*Nc*(fc+Ns)  # integrand
+            #dng = Nc*(fc+Ns)
+            print('ns_independent: no')
+            print('Nc =', Nc,'Ns=',Ns,'fc=',fc)
 
         ng = simps(dng, x=np.log10(M))
-        return ng.squeeze() if squeeze else ng
+        ng = ng.squeeze() if squeeze else ng
+        return ng
 
     def fourier_profiles(self, cosmo, k, M, a, squeeze=True, **kwargs):
         """
@@ -267,6 +322,10 @@ class HOD(object):
 
         # extract parameters
         fc = kwargs["fc"]
+        # if "type" in kwargs:
+        #     print(kwargs["type"])
+        #     kwargs["Mmin"] = np.log10(vec_unwise_mthresh(1./a-1.))
+        #     #exit()
 
         # HOD Model
         Nc = self.n_cent(M, **kwargs)   # centrals
@@ -275,9 +334,53 @@ class HOD(object):
 
         H, _ = NFW().fourier_profiles(cosmo, k, M, a, squeeze=False,
                                       **kwargs)
-
+        #H = 2.79736056 #BB
+        print('H=',H)
+        print('fc=',fc)
         if self.ns_independent:
             F, F2 = (Nc*fc + Ns*H), (2*Nc*fc*Ns*H + (Ns*H)**2)
         else:
+            print("doing nc+nc*ns*us")
             F, F2 = Nc*(fc + Ns*H), Nc*(2*fc*Ns*H + (Ns*H)**2)
         return (F.squeeze(), F2.squeeze()) if squeeze else F, F2
+
+def unwise_mthresh(zz):
+    isamp = 'red'
+    green_option='default'
+    '''Gives mcut for 5-param Zheng HOD for wise sample isamp at redshift zz.
+    Satellite fractions 5-10% for red and green, and 25% for blue.
+    green_option = 'default' or 'shallower'; 'default' is the default
+    bias evolution, and shallower is a somewhat shallower bias evolution,
+    but with higher masses.'''
+    #zz = 2.1 # BB debug
+    if isamp=='red':
+        zall = [ 0.75,  1.00,  1.5,  2.0]
+        mcut_all = [12.00, 12.00, 12.6, 13.6]
+        if zz <= 0.75:
+            mcut = 12.00
+        elif (zz > 0.75) & (zz <= 2.00):
+            mcut = np.interp(zz,zall,mcut_all)
+        elif zz >= 2.00:
+            mcut = 13.6
+    elif isamp=='green':
+        if green_option == 'default':
+            zall = [0.00, 0.25, 0.4, 0.5, 0.65, 0.75, 1.00, 1.25, 1.50, 2.00, 2.50]
+            mcut_all = [11.9, 12.0, 12.15, 12.15, 11.75, 11.75, 12.4, 12.6, 12.75, 13.25, 13.25]
+            if zz <= 2.5:
+               mcut = np.interp(zz, zall,mcut_all)
+            else:
+                mcut = 13.55
+        elif green_option == 'shallower':
+            zall = [0.25, 0.4, 0.5, 0.65, 0.75, 1.00]
+            mcut_all = [11.5, 12, 12, 11, 11, 12.72]
+            if zz <= 1.0:
+                mcut = np.interp(zz, zall,mcut_all)
+            else:
+                mcut = -0.5161*zz**4+2.919*zz**3-5.384*zz**2+\
+                           3.842*zz+12.01 if zz < 2.5 else 13.42
+    elif isamp=='blue':
+        mcut = 11.65 + zz
+    #mcut = 14. # BB debug
+    return 10**mcut
+
+vec_unwise_mthresh = np.vectorize(unwise_mthresh)

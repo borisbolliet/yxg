@@ -156,6 +156,7 @@ def hm_power_spectrum(cosmo, k, a, profiles,
     M = np.logspace(logMmin, logMmax, mpoints)  # masses sampled
 
     # Out-of-loop optimisations
+
     Pl = np.array([ccl.linear_matter_power(cosmo, k[i], a)
                    for i, a in enumerate(a)])
     Dm = p1.Delta/ccl.omega_x(cosmo, a, "matter")  # CCL uses Delta_m
@@ -164,7 +165,7 @@ def hm_power_spectrum(cosmo, k, a, profiles,
         select = np.array([selection(M,1./aa-1) for aa in a])
         mfunc *= select
     bh = np.array([ccl.halo_bias(cosmo, M, A1, A2) for A1, A2 in zip(a, Dm)])
-
+    #bh = np.ones(len(bh)) # BB
     # shape transformations
     mfunc, bh = mfunc.T[..., None], bh.T[..., None]
     if selection is not None:
@@ -173,14 +174,21 @@ def hm_power_spectrum(cosmo, k, a, profiles,
     else:
         select = 1
 
-    U, UU = p1.fourier_profiles(cosmo, k, M, a, squeeze=False, **kwargs)
+    chi = ccl.comoving_radial_distance(cosmo, a)
+    kfp = k#*chi[..., None]
+    U, UU = p1.fourier_profiles(cosmo, kfp, M, a, squeeze=False, **kwargs)
+    print("U")
+    print(U)
     # optimise for autocorrelation (no need to recompute)
     if p1.name == p2.name:
         V = U
         UV = UU
     else:
-        V, VV = p2.fourier_profiles(cosmo, k, M, a, squeeze=False, **kwargs)
+        V, VV = p2.fourier_profiles(cosmo, kfp, M, a, squeeze=False, **kwargs)
         r = kwargs["r_corr"] if "r_corr" in kwargs else 0
+        print('r = ',r, 'then set to 0')
+        r = 0 # BB
+
         UV = U*V*(1+r)
 
     # Tinker mass function is given in dn/dlog10M, so integrate over d(log10M)
@@ -196,11 +204,19 @@ def hm_power_spectrum(cosmo, k, a, profiles,
     n0_1h = np.array((rhoM - np.dot(M, mfunc) * dlM)/M[0])[None, ..., None]
     n0_2h = np.array((rhoM - np.dot(M, mfunc*bh) * dlM)/M[0])[None, ..., None]
 
-    P1h += (n0_1h*U[0]*V[0]).squeeze()
-    b2h_1 += (n0_2h*U[0]).squeeze()
-    b2h_2 += (n0_2h*V[0]).squeeze()
+    # Boris:commented
+    # P1h += (n0_1h*U[0]*V[0]).squeeze()
+    # b2h_1 += (n0_2h*U[0]).squeeze()
+    # b2h_2 += (n0_2h*V[0]).squeeze()
 
     F = (include_1h*P1h + include_2h*(Pl*b2h_1*b2h_2)) / (Unorm*Vnorm)
+    print("Unorm: ", Unorm)
+    print("Vnorm: ", Vnorm)
+    # F = (include_1h*P1h + include_2h*(Pl/Pl*b2h_1/b2h_2)) / (Unorm*Vnorm)
+    # F = (include_1h*P1h + include_2h*(Pl*b2h_1/b2h_2))
+    #F = F/F*Pl*b2h_1*b2h_2/(Unorm*Vnorm)
+    #exit()
+    #F = (include_1h*P1h + include_2h*(Pl)) / (Unorm*Vnorm) # BB: simplified
 
     if hm_correction is not None:
         for ia, (aa, kk) in enumerate(zip(a, k)):
@@ -210,8 +226,8 @@ def hm_power_spectrum(cosmo, k, a, profiles,
 
 
 def hm_ang_power_spectrum(cosmo, l, profiles,
-                          zrange=(1e-6, 6), zpoints=32, zlog=True,
-                          logMrange=(6, 17), mpoints=128,
+                          zrange=(1e-6, 6), zpoints=64, zlog=True,
+                          logMrange=(6, 17), mpoints=256,
                           include_1h=True, include_2h=True,
                           hm_correction=None, selection=None,
                           **kwargs):
@@ -253,6 +269,7 @@ def hm_ang_power_spectrum(cosmo, l, profiles,
     """
     # Integration boundaries
     zmin, zmax = zrange
+    print('zmin, zmax',zmin,zmax)
     # Distance measures & out-of-loop optimisations
     if zlog:
         z = np.geomspace(zmin, zmax, zpoints)
@@ -263,7 +280,12 @@ def hm_ang_power_spectrum(cosmo, l, profiles,
         jac = 1
         x = z
     a = 1/(1+z)
+    #chi = np.ones(len(ccl.comoving_radial_distance(cosmo, a)))
     chi = ccl.comoving_radial_distance(cosmo, a)
+
+    # print("z=",z)
+    # print("chi=",chi)
+    # exit()
 
     H_inv = 2997.92458 * jac/(ccl.h_over_h0(cosmo, a)*cosmo["h"])  # c*z/H(z)
 
@@ -272,6 +294,7 @@ def hm_ang_power_spectrum(cosmo, l, profiles,
     Wu = p1.kernel(cosmo, a, **kwargs)
     Wv = Wu if (p1.name == p2.name) else p2.kernel(cosmo, a, **kwargs)
     N = H_inv*Wu*Wv/chi**2  # overall normalisation factor
+    #N = H_inv/chi**2*N/N#*jac
 
     k = (l+1/2)/chi[..., None]
     Puv = hm_power_spectrum(cosmo, k, a, profiles, logMrange, mpoints,

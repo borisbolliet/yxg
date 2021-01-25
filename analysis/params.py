@@ -1,6 +1,6 @@
 import yaml
 import pyccl as ccl
-from .bandpowers import Bandpowers
+#from .bandpowers import Bandpowers
 
 
 class ParamRun(object):
@@ -53,15 +53,15 @@ class ParamRun(object):
         fname += data_name + "_"
         return fname
 
-    def get_bandpowers(self):
-        """
-        Create a `Bandpowers` object from input.
-
-        Returns:
-            :obj:`Bandpowers`: bandpowers.
-        """
-        return Bandpowers(self.p['global']['nside'],
-                          self.p['bandpowers'])
+    # def get_bandpowers(self):
+    #     """
+    #     Create a `Bandpowers` object from input.
+    #
+    #     Returns:
+    #         :obj:`Bandpowers`: bandpowers.
+    #     """
+    #     return Bandpowers(self.p['global']['nside'],
+    #                       self.p['bandpowers'])
 
     def get_models(self):
         """

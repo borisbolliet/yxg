@@ -41,6 +41,8 @@ def concentration_duffy(M, a, is_D500=False, squeeze=True):
     else:  # Duffy et al. 2008 (Table 1, row 2)
         A, B, C = 5.71, -0.084, -0.47
 
+    # A, B, C =1., 0., 0.
+    # m_pivot = 1e12
     c = A * (M[..., None]/m_pivot)**B / a**C
     return c.squeeze() if squeeze else c
 

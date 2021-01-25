@@ -1,0 +1,32 @@
+# Maps
+maps:
+    - name: "unwise"
+      type: "g"
+      # map: "data/maps/2dstarsub_WISC_cleaned_public.bin_0.2_z_0.25.Pix512.fits"
+      # mask: "mask_lowz"
+      # dndz: "data/dndz/WISC_bin3.txt"
+      # beam: False
+      model:
+          M0:  11.7
+          M1:  14.
+          M1_prime_HOD_factor: 15.
+          M_min_HOD_satellite_mass_factor_unwise: 0.1
+          Mmin:  11.7 # central -- the same as M0
+          alpha:  0.8
+          beta_gal:  1.0
+          beta_max:  1.0
+          fc:  1.0
+          #r_corr:  -0.62590662
+          sigma_lnM:  0.25
+          #width: 0.96975127
+          type: "unwise_hod"
+      # systematics:
+      #   - 'scos_plates'
+      #   - 'Star_contamination/2dstarcorr_WISC_cleaned_public.bin_0.2_z_0.25.Pix512.fits'
+      #   - 'data/maps/lambda_sfd_ebv.fits'
+# # MCMC
+mcmc:
+    # Cosmological mass function
+    mfunc: 'tinker'
+    # Halo bias model
+    hbias: 'tinker10'

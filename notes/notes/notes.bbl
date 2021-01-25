@@ -1,0 +1,69 @@
+\begin{thebibliography}{10}
+
+\bibitem{2019MNRAS.484.4127A}
+D.~{Alonso}, J.~{Sanchez}, and A.~{Slosar}.
+\newblock {A unified pseudo-C$_{ℓ}$ framework}.
+\newblock {\em \mnras}, 484:4127--4151, Apr. 2019, 1809.09603.
+
+\bibitem{2010A&A...517A..92A}
+M.~{Arnaud}, G.~W. {Pratt}, R.~{Piffaretti}, H.~{B{\"o}hringer}, J.~H.
+  {Croston}, and E.~{Pointecouteau}.
+\newblock {The universal galaxy cluster pressure profile from a representative
+  sample of nearby systems (REXCESS) and the Y$_{SZ}$ - M$_{500}$ relation}.
+\newblock {\em \aap}, 517:A92, July 2010, 0910.1234.
+
+\bibitem{2012ApJ...758...75B}
+N.~{Battaglia}, J.~R. {Bond}, C.~{Pfrommer}, and J.~L. {Sievers}.
+\newblock {On the Cluster Physics of Sunyaev-Zel'dovich and X-Ray Surveys. II.
+  Deconstructing the Thermal SZ Power Spectrum}.
+\newblock {\em \apj}, 758:75, Oct. 2012, 1109.3711.
+
+\bibitem{2004MNRAS.349..603E}
+G.~{Efstathiou}.
+\newblock {Myths and truths concerning estimation of power spectra: the case
+  for a hybrid estimator}.
+\newblock {\em \mnras}, 349:603--626, Apr. 2004, astro-ph/0307515.
+
+\bibitem{2017MNRAS.470.2100K}
+E.~{Krause} and T.~{Eifler}.
+\newblock {cosmolike - cosmological likelihood analyses for photometric galaxy
+  surveys}.
+\newblock {\em \mnras}, 470:2100--2112, Sept. 2017, 1601.05779.
+
+\bibitem{1997ApJ...490..493N}
+J.~F. {Navarro}, C.~S. {Frenk}, and S.~D.~M. {White}.
+\newblock {A Universal Density Profile from Hierarchical Clustering}.
+\newblock {\em \apj}, 490:493--508, Dec. 1997, astro-ph/9611107.
+
+\bibitem{2016A&A...594A..24P}
+{Planck Collaboration}, P.~A.~R. {Ade}, N.~{Aghanim}, M.~{Arnaud},
+  M.~{Ashdown}, J.~{Aumont}, C.~{Baccigalupi}, A.~J. {Banday}, R.~B.
+  {Barreiro}, J.~G. {Bartlett}, and et~al.
+\newblock {Planck 2015 results. XXIV. Cosmology from Sunyaev-Zeldovich cluster
+  counts}.
+\newblock {\em \aap}, 594:A24, Sept. 2016, 1502.01597.
+
+\bibitem{2010ApJ...724..878T}
+J.~L. {Tinker}, B.~E. {Robertson}, A.~V. {Kravtsov}, A.~{Klypin}, M.~S.
+  {Warren}, G.~{Yepes}, and S.~{Gottl{\"o}ber}.
+\newblock {The Large-scale Bias of Dark Matter Halos: Numerical Calibration and
+  Model Tests}.
+\newblock {\em \apj}, 724:878--886, Dec. 2010, 1001.3162.
+
+\bibitem{2011ApJ...736...59Z}
+I.~{Zehavi}, Z.~{Zheng}, D.~H. {Weinberg}, M.~R. {Blanton}, N.~A. {Bahcall},
+  A.~A. {Berlind}, J.~{Brinkmann}, J.~A. {Frieman}, J.~E. {Gunn}, R.~H.
+  {Lupton}, R.~C. {Nichol}, W.~J. {Percival}, D.~P. {Schneider}, R.~A.
+  {Skibba}, M.~A. {Strauss}, M.~{Tegmark}, and D.~G. {York}.
+\newblock {Galaxy Clustering in the Completed SDSS Redshift Survey: The
+  Dependence on Color and Luminosity}.
+\newblock {\em \apj}, 736:59, July 2011, 1005.2413.
+
+\bibitem{2005ApJ...633..791Z}
+Z.~{Zheng}, A.~A. {Berlind}, D.~H. {Weinberg}, A.~J. {Benson}, C.~M. {Baugh},
+  S.~{Cole}, R.~{Dav{\'e}}, C.~S. {Frenk}, N.~{Katz}, and C.~G. {Lacey}.
+\newblock {Theoretical Models of the Halo Occupation Distribution: Separating
+  Central and Satellite Galaxies}.
+\newblock {\em \apj}, 633:791--809, Nov. 2005, astro-ph/0408564.
+
+\end{thebibliography}
